@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Compte est bon - Avec applaudissements</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(145deg, #1a3c2c 0%, #0e2a1d 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 16px;
+        }
+
+        .game-container {
+            max-width: 550px;
+            width: 100%;
+            background: #fff8ed;
+            border-radius: 50px;
+            padding: 20px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.5rem;
+            margin: 0 0 5px;
+            color: #f7b05e;
+            text-shadow: 1px 1px 0 #7a3e1a;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        select {
+            background: #2c5e3f;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 30px;
+            font-weight: bold;
+            border: none;
+            font-size: 0.9rem;
+            flex: 1;
+        }
+
+        .timer {
+            background: #251c10;
+            padding: 6px 14px;
+            border-radius: 30px;
+            color: #ffd966;
+            font-family: monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .target-area {
+            background: #f2ddb0;
+            border-radius: 40px;
+            padding: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .target-label {
+            font-size: 0.8rem;
+            color: #9b4b2c;
+        }
+
+        .target-number {
+            font-size: 3rem;
+            font-weight: 800;
+            background: white;
+            display: inline-block;
+            padding: 5px 25px;
+            border-radius: 50px;
+            color: #2d5a3b;
+            font-family: monospace;
+            margin-top: 5px;
+        }
+
+        .numbers-pool {
+            background: #e7dbbd;
+            border-radius: 40px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .numbers-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .number-card {
+            background: white;
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 30px;
+            box-shadow: 0 5px 0 #aa7744;
+            cursor: pointer;
+            transition: 0.05s linear;
+        }
+
+        .number-card.used {
+            background: #aaa;
+            box-shadow: 0 2px 0 #666;
+            transform: translateY(3px);
+            text-decoration: line-through;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .operations-panel {
+            background: #d9cba3;
+            border-radius: 40px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+
+        .ops-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .op-btn {
+            background: #f3bc6c;
+            width: 55px;
+            height: 55px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            border-radius: 30px;
+            border: none;
+            box-shadow: 0 4px 0 #8b5a2b;
+            cursor: pointer;
+        }
+
+        .calc-area {
+            background: #2c2b26;
+            border-radius: 35px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+
+        .calc-expression {
+            background: #1e1d1a;
+            color: #0f0;
+            font-size: 1.2rem;
+            padding: 10px;
+            border-radius: 25px;
+            font-family: monospace;
+            text-align: center;
+            word-break: break-all;
+            min-height: 55px;
+        }
+
+        .calc-result {
+            background: #3a3528;
+            color: #ffd966;
+            font-size: 1.2rem;
+            padding: 6px;
+            border-radius: 25px;
+            text-align: center;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #f3bc6c;
+            border: none;
+            padding: 8px 14px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .solution-area {
+            background: #fff4e6;
+            border-radius: 25px;
+            padding: 10px;
+            font-size: 0.7rem;
+            max-height: 120px;
+            overflow-y: auto;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .solution-area.visible {
+            display: block;
+        }
+
+        /* Félicitations */
+        .congrats-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .congrats-card {
+            background: linear-gradient(145deg, #f9e45b, #ffb347);
+            border-radius: 60px;
+            padding: 30px 40px;
+            text-align: center;
+            animation: bounce 0.5s ease;
+            max-width: 80%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .congrats-emoji {
+            font-size: 4rem;
+        }
+
+        .congrats-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 2px 2px 0 #c46a1a;
+            margin: 10px 0;
+        }
+
+        .congrats-message {
+            font-size: 1.1rem;
+            color: #2c3e2b;
+            background: white;
+            padding: 8px 20px;
+            border-radius: 40px;
+            margin: 15px 0;
+        }
+
+        .next-level-btn {
+            background: #2c5e3f;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        @keyframes bounce {
+            0% { transform: scale(0); opacity: 0; }
+            60% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: gold;
+            position: absolute;
+            animation: fall 2s linear forwards;
+            z-index: 1999;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .used-badge {
+            font-size: 0.65rem;
+            background: #4a6a3b;
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            color: white;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <h1>🎲 COMPTE EST BON 🎯</h1>
+
+    <div class="top-bar">
+        <select id="difficultySelect">
+            <option value="easy">🟢 Débutant</option>
+            <option value="medium" selected>🟡 Intermédiaire</option>
+            <option value="free">♾️ Libre</option>
+        </select>
+        <span class="timer" id="timerDisplay">--:--</span>
+        <button id="musicToggle" style="background:#4a6a3b;color:white;">🔇 Son</button>
+    </div>
+
+    <div class="target-area">
+        <div class="target-label">🎯 OBJECTIF À ATTEINDRE</div>
+        <div class="target-number" id="targetValue">---</div>
+    </div>
+
+    <div class="numbers-pool">
+        <div class="section-title">🔢 NOMBRES <span id="usedBadge" class="used-badge">0/6</span></div>
+        <div class="numbers-list" id="numbersContainer"></div>
+    </div>
+
+    <div class="operations-panel">
+        <div class="section-title">➕ OPÉRATIONS</div>
+        <div class="ops-buttons">
+            <button class="op-btn" data-op="+">+</button>
+            <button class="op-btn" data-op="-">−</button>
+            <button class="op-btn" data-op="*">×</button>
+            <button class="op-btn" data-op="/">÷</button>
+        </div>
+    </div>
+
+    <div class="calc-area">
+        <div class="section-title" style="color:#ddd;">📝 TON CALCUL</div>
+        <div class="calc-expression" id="calcExpression">0</div>
+        <div class="calc-result" id="calcResult">= ?</div>
+    </div>
+
+    <div class="controls">
+        <button id="validateBtn">✅ VALIDER</button>
+        <button id="resetBtn" style="background:#7a4a2a;color:white;">🗑️ EFFACER</button>
+        <button id="newGameBtn">✨ NOUVEAU</button>
+        <button id="solutionBtn">💡 SOLUTION</button>
+    </div>
+
+    <div class="solution-area" id="solutionArea">
+        <strong>📋 SOLUTIONS :</strong><br>
+        <div id="solutionText"></div>
+    </div>
+</div>
+
+<script>
+    // ========== SOLVEUR ==========
+    function findAllSolutions(numbers, target, maxSols = 4) {
+        let solutions = new Set();
+        function explore(currentNums, path) {
+            if (solutions.size >= maxSols) return;
+            let n = currentNums.length;
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    let a = currentNums[i];
+                    let b = currentNums[j];
+                    let newNums = [];
+                    for (let k = 0; k < n; k++) if (k !== i && k !== j) newNums.push(currentNums[k]);
+                    
+                    let ops = [
+                        { res: a + b, str: `(${a} + ${b})` },
+                        { res: a * b, str: `(${a} × ${b})` }
+                    ];
+                    if (a > b) ops.push({ res: a - b, str: `(${a} − ${b})` });
+                    else ops.push({ res: b - a, str: `(${b} − ${a})` });
+                    if (b !== 0 && a % b === 0) ops.push({ res: a / b, str: `(${a} ÷ ${b})` });
+                    if (a !== 0 && b % a === 0) ops.push({ res: b / a, str: `(${b} ÷ ${a})` });
+                    
+                    for (let op of ops) {
+                        let newVal = op.res;
+                        if (newVal <= 0 || !Number.isInteger(newVal)) continue;
+                        let newPath = path ? `${path} → ${op.str}` : op.str;
+                        if (Math.abs(newVal - target) < 0.001) {
+                            solutions.add(newPath + ` = ${target}`);
+                            if (solutions.size >= maxSols) return;
+                        }
+                        let nextNums = [...newNums, newVal];
+                        if (nextNums.length > 1) explore(nextNums, newPath);
+                    }
+                }
+            }
+        }
+        explore(numbers, "");
+        return Array.from(solutions);
+    }
+
+    // ========== GÉNÉRATION ==========
+    function getNumberRange(level) {
+        if (level === 'easy') return { min: 1, max: 10 };
+        if (level === 'medium') return { min: 2, max: 20 };
+        return { min: 1, max: 20 };
+    }
+
+    function getTargetRange(level) {
+        if (level === 'easy') return { min: 20, max: 100 };
+        if (level === 'medium') return { min: 50, max: 150 };
+        return { min: 30, max: 120 };
+    }
+
+    function getTimeLimit(level) {
+        if (level === 'easy') return 300;
+        if (level === 'medium') return 240;
+        return 999999;
+    }
+
+    function getLevelName(level) {
+        if (level === 'easy') return "Débutant 🟢";
+        if (level === 'medium') return "Intermédiaire 🟡";
+        return "Libre ♾️";
+    }
+
+    function generateNumbers(level) {
+        let range = getNumberRange(level);
+        let nums = [];
+        for (let i = 0; i < 6; i++) {
+            nums.push(Math.floor(Math.random() * (range.max - range.min + 1)) + range.min);
+        }
+        return nums;
+    }
+
+    function generateTarget(level) {
+        let range = getTargetRange(level);
+        return Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+    }
+
+    function generateValidGame(level) {
+        for (let attempt = 0; attempt < 30; attempt++) {
+            let nums = generateNumbers(level);
+            let target = generateTarget(level);
+            let sols = findAllSolutions(nums, target, 1);
+            if (sols.length > 0) {
+                return { numbers: nums, target: target, solutions: sols };
+            }
+        }
+        return { numbers: [5, 3, 2, 4, 6, 8], target: 42, solutions: ["(8 × 5) + 2 = 42"] };
+    }
+
+    // ========== JEU ==========
+    let currentGame = null;
+    let usedNumbers = [];
+    let currentValue = 0;
+    let pendingOp = null;
+    let displayExpression = "";
+    let gameActive = true;
+    let timerInterval = null;
+    let timeLeft = 300;
+    let musicEnabled = false;
+    let audioCtx = null;
+    let currentLevel = "medium";
+
+    // DOM
+    const targetSpan = document.getElementById('targetValue');
+    const numbersContainer = document.getElementById('numbersContainer');
+    const difficultySelect = document.getElementById('difficultySelect');
+    const newGameBtn = document.getElementById('newGameBtn');
+    const validateBtn = document.getElementById('validateBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const solutionBtn = document.getElementById('solutionBtn');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const solutionArea = document.getElementById('solutionArea');
+    const solutionTextSpan = document.getElementById('solutionText');
+    const musicToggle = document.getElementById('musicToggle');
+    const usedBadge = document.getElementById('usedBadge');
+    const calcExpressionDiv = document.getElementById('calcExpression');
+    const calcResultDiv = document.getElementById('calcResult');
+
+    // ========== CONFETTIS ==========
+    function createConfetti() {
+        for (let i = 0; i < 100; i++) {
+            let conf = document.createElement('div');
+            conf.className = 'confetti';
+            conf.style.left = Math.random() * 100 + '%';
+            conf.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            conf.style.width = Math.random() * 8 + 4 + 'px';
+            conf.style.height = Math.random() * 8 + 4 + 'px';
+            conf.style.animationDuration = Math.random() * 2 + 1 + 's';
+            conf.style.animationDelay = Math.random() * 0.5 + 's';
+            document.body.appendChild(conf);
+            setTimeout(() => conf.remove(), 2000);
+        }
+    }
+
+    // ========== SONS (applaudissements) ==========
+    function playApplause() {
+        if (!musicEnabled) return;
+        try {
+            // Simuler des applaudissements avec des bruits blancs
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    let osc = audioCtx.createOscillator();
+                    let gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.frequency.value = 800 + Math.random() * 400;
+                    gain.gain.value = 0.08;
+                    osc.start();
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.15);
+                    osc.stop(audioCtx.currentTime + 0.15);
+                }, i * 80);
+            }
+        } catch(e) {}
+    }
+
+    function playVictorySound() {
+        if (!musicEnabled) return;
+        try {
+            let notes = [523, 659, 784, 1046];
+            notes.forEach((freq, i) => {
+                setTimeout(() => {
+                    let osc = audioCtx.createOscillator();
+                    let gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.frequency.value = freq;
+                    gain.gain.value = 0.15;
+                    osc.start();
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+                    osc.stop(audioCtx.currentTime + 0.3);
+                }, i * 120);
+            });
+        } catch(e) {}
+    }
+
+    function playSound(freq, duration) {
+        if (!musicEnabled) return;
+        try {
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = freq;
+            gain.gain.value = 0.1;
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+            osc.stop(audioCtx.currentTime + duration);
+        } catch(e) {}
+    }
+
+    // ========== FÉLICITATIONS ==========
+    function showCongratulations() {
+        let level = difficultySelect.value;
+        let levelName = getLevelName(level);
+        let messages = {
+            easy: ["🌟 Super débutant !", "Continue comme ça !", "Tu progresses vite !"],
+            medium: ["🎉 Bravo ! Niveau intermédiaire maîtrisé !", "👍 Excellent calcul mental !", "🔥 Tu deviens un pro !"],
+            free: ["🏆 Champion !", "🎯 Objectif réussi !", "💪 Puissant mental !"]
+        };
+        let msgList = messages[level] || messages.medium;
+        let randomMsg = msgList[Math.floor(Math.random() * msgList.length)];
+        
+        // Créer l'overlay
+        let overlay = document.createElement('div');
+        overlay.className = 'congrats-overlay';
+        overlay.innerHTML = `
+            <div class="congrats-card">
+                <div class="congrats-emoji">🎉👏🎊</div>
+                <div class="congrats-title">FÉLICITATIONS !</div>
+                <div class="congrats-message">${randomMsg}<br>${displayExpression} = ${currentGame.target}</div>
+                <button class="next-level-btn" id="nextLevelBtn">✨ NOUVEAU DÉFI ✨</button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        
+        // Applaudissements + confettis
+        createConfetti();
+        playVictorySound();
+        playApplause();
+        
+        // Bouton pour continuer
+        document.getElementById('nextLevelBtn').onclick = () => {
+            overlay.remove();
+            newGame();
+        };
+        
+        // Cliquer à côté ferme aussi
+        overlay.onclick = (e) => {
+            if (e.target === overlay) {
+                overlay.remove();
+                newGame();
+            }
+        };
+    }
+
+    function updateDisplay() {
+        calcExpressionDiv.innerText = displayExpression || "0";
+        if (pendingOp === null) {
+            calcResultDiv.innerHTML = `= ${currentValue}`;
+        } else {
+            let opSym = pendingOp === '+' ? '+' : pendingOp === '-' ? '−' : pendingOp === '*' ? '×' : '÷';
+            calcResultDiv.innerHTML = `= ${currentValue} ${opSym} ?`;
+        }
+    }
+
+    function addNumber(num, idx) {
+        if (!gameActive) return;
+        if (usedNumbers[idx]) { alert("Nombre déjà utilisé !"); return; }
+
+        if (pendingOp !== null) {
+            let newVal = currentValue;
+            if (pendingOp === '+') newVal = currentValue + num;
+            else if (pendingOp === '-') newVal = currentValue - num;
+            else if (pendingOp === '*') newVal = currentValue * num;
+            else if (pendingOp === '/') {
+                if (num === 0) { alert("Division par zéro !"); return; }
+                newVal = currentValue / num;
+                if (!Number.isInteger(newVal)) { alert("Résultat non entier !"); return; }
+            }
+            currentValue = newVal;
+            displayExpression = displayExpression + " " + num;
+            pendingOp = null;
+            usedNumbers[idx] = true;
+            updateDisplay();
+        } else {
+            if (displayExpression === "" || displayExpression === "0") {
+                currentValue = num;
+                displayExpression = num.toString();
+                usedNumbers[idx] = true;
+                updateDisplay();
+            } else {
+                alert("Choisis une opération d'abord !");
+                return;
+            }
+        }
+        renderNumbers();
+    }
+
+    function addOperation(op) {
+        if (!gameActive) return;
+        if (displayExpression === "" || displayExpression === "0") {
+            alert("Ajoute un nombre d'abord !");
+            return;
+        }
+        if (pendingOp !== null) {
+            alert("Choisis un nombre avant l'opération !");
+            return;
+        }
+        pendingOp = op;
+        let opSym = op === '+' ? '+' : op === '-' ? '−' : op === '*' ? '×' : '÷';
+        displayExpression = displayExpression + " " + opSym;
+        updateDisplay();
+    }
+
+    function resetCalculation() {
+        currentValue = 0;
+        pendingOp = null;
+        displayExpression = "";
+        updateDisplay();
+        usedNumbers.fill(false);
+        renderNumbers();
+    }
+
+    function validate() {
+        if (!gameActive || !currentGame) return;
+        if (pendingOp !== null) { alert("Termine ton calcul !"); return; }
+        if (displayExpression === "" || displayExpression === "0") { alert("Fais un calcul !"); return; }
+        
+        if (Math.abs(currentValue - currentGame.target) < 0.001) {
+            gameActive = false;
+            stopTimer();
+            showCongratulations();  // ← Message + applaudissements !
+        } else {
+            alert(`❌ ${displayExpression} = ${currentValue}\n🎯 Objectif : ${currentGame.target}`);
+            playSound(220, 0.2);
+        }
+    }
+
+    // ========== TIMER ==========
+    function stopTimer() { if (timerInterval) clearInterval(timerInterval); }
+    
+    function startTimer() {
+        stopTimer();
+        let level = difficultySelect.value;
+        timeLeft = getTimeLimit(level);
+        if (level === 'free') { timerDisplay.innerText = "∞"; return; }
+        let mins = Math.floor(timeLeft / 60);
+        let secs = timeLeft % 60;
+        timerDisplay.innerText = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+        timerInterval = setInterval(() => {
+            if (difficultySelect.value !== 'free' && timeLeft > 0 && gameActive) {
+                timeLeft--;
+                let m = Math.floor(timeLeft / 60);
+                let s = timeLeft % 60;
+                timerDisplay.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                if (timeLeft <= 0) {
+                    stopTimer();
+                    alert("⏰ Temps écoulé !");
+                    gameActive = false;
+                }
+            }
+        }, 1000);
+    }
+
+    // ========== MUSIQUE DE FOND ==========
+    function startBgMusic() {
+        if (!musicEnabled || audioCtx) return;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function loop() {
+            if (!musicEnabled) return;
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = 440;
+            gain.gain.value = 0.03;
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 2);
+            osc.stop(audioCtx.currentTime + 2);
+            setTimeout(loop, 3500);
+        }
+        loop();
+    }
+
+    musicToggle.onclick = () => {
+        musicEnabled = !musicEnabled;
+        if (musicEnabled) {
+            startBgMusic();
+            musicToggle.innerText = "🎵 Son ON";
+            musicToggle.style.background = "#f3bc6c";
+            musicToggle.style.color = "#2e3b27";
+        } else {
+            if (audioCtx) audioCtx.close();
+            audioCtx = null;
+            musicToggle.innerText = "🔇 Son OFF";
+            musicToggle.style.background = "#4a6a3b";
+            musicToggle.style.color = "white";
+        }
+    };
+
+    // ========== AFFICHAGE ==========
+    function renderNumbers() {
+        numbersContainer.innerHTML = '';
+        let usedCount = 0;
+        currentGame.numbers.forEach((num, idx) => {
+            let card = document.createElement('div');
+            card.className = 'number-card' + (usedNumbers[idx] ? ' used' : '');
+            card.innerText = num;
+            if (!usedNumbers[idx] && gameActive) {
+                card.onclick = () => addNumber(num, idx);
+            }
+            numbersContainer.appendChild(card);
+            if (usedNumbers[idx]) usedCount++;
+        });
+        usedBadge.innerText = `${usedCount}/6`;
+    }
+
+    function showSolutions() {
+        if (!currentGame) return;
+        let sols = findAllSolutions(currentGame.numbers, currentGame.target, 4);
+        solutionTextSpan.innerHTML = sols.length ? sols.map(s => `🔹 ${s}`).join('<br>') : "❌ Aucune";
+        solutionArea.classList.add('visible');
+    }
+
+    function newGame() {
+        let level = difficultySelect.value;
+        currentLevel = level;
+        currentGame = generateValidGame(level);
+        usedNumbers = new Array(6).fill(false);
+        gameActive = true;
+        solutionArea.classList.remove('visible');
+        targetSpan.innerText = currentGame.target;
+        resetCalculation();
+        renderNumbers();
+        startTimer();
+    }
+
+    // Écouteurs
+    document.querySelectorAll('.op-btn').forEach(btn => {
+        btn.onclick = () => addOperation(btn.dataset.op);
+    });
+    validateBtn.onclick = validate;
+    resetBtn.onclick = resetCalculation;
+    newGameBtn.onclick = () => newGame();
+    solutionBtn.onclick = showSolutions;
+    difficultySelect.onchange = () => newGame();
+
+    newGame();
+</script>
+</body>
+</html>
